@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Khaled</title>
+<style>
+:root{
+  --bg:#0a0906;
+  --panel:#100d08;
+  --ink:#e8dcc0;
+  --ink-dim:#9c8f6f;
+  --gold:#c9a227;
+  --gold-dim:#7a6320;
+  --teal:#3fa89a;
+  --red:#8a2f22;
+  --line:#4a3f22;
+  --grid: 8px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);}
+body{
+  font-family:'IBM Plex Mono','Courier New',monospace;
+  font-size:15px;
+  line-height:1.6;
+  cursor:none;
+  overflow-x:hidden;
+  position:relative;
+}
+@media (pointer:coarse){
+  body{cursor:auto;}
+  .cursor-dot,.cursor-ring{display:none !important;}
+}
+h1,h2,h3{
+  font-family:'Cinzel','Trajan Pro',serif;
+  font-weight:600;
+  letter-spacing:.06em;
+  margin:0;
+  color:var(--gold);
+}
+a{color:var(--teal);text-decoration:none;}
+a:hover{color:var(--gold);}
+
+/* ---------- background collage (css/svg only, original) ---------- */
+.bg-collage{
+  position:fixed;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse at 20% 10%, rgba(201,162,39,.08), transparent 40%),
+    radial-gradient(ellipse at 80% 30%, rgba(63,168,154,.06), transparent 45%),
+    radial-gradient(ellipse at 50% 90%, rgba(138,47,34,.10), transparent 50%),
+    repeating-linear-gradient(115deg, #14110a 0px, #14110a 2px, #0e0c07 2px, #0e0c07 4px);
+  opacity:.9;
+}
+.bg-motifs{position:fixed;inset:0;z-index:0;opacity:.14;pointer-events:none;}
+.bg-motifs svg{position:absolute;}
+
+/* CRT scanlines + grain */
+.crt::before{
+  content:"";position:fixed;inset:0;z-index:5;pointer-events:none;
+  background:repeating-linear-gradient(
+    to bottom, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px,
+    rgba(0,0,0,.18) 3px, rgba(0,0,0,0) 4px
+  );
+  mix-blend-mode:multiply;
+}
+.crt::after{
+  content:"";position:fixed;inset:0;z-index:6;pointer-events:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/></svg>");
+  opacity:.5;
+  animation:grain 1.2s steps(3) infinite;
+}
+@keyframes grain{
+  0%{transform:translate(0,0)}
+  33%{transform:translate(-1%,1%)}
+  66%{transform:translate(1%,-1%)}
+  100%{transform:translate(0,0)}
+}
+.vignette{position:fixed;inset:0;z-index:4;pointer-events:none;
+  box-shadow:inset 0 0 220px rgba(0,0,0,.85);}
+
+/* ---------- custom cursor ---------- */
+.cursor-dot,.cursor-ring{position:fixed;top:0;left:0;pointer-events:none;z-index:9999;border-radius:50%;}
+.cursor-dot{width:4px;height:4px;background:var(--gold);}
+.cursor-ring{width:22px;height:22px;border:1px solid var(--gold-dim);transition:transform .12s ease, border-color .12s ease;}
+.cursor-ring.active{border-color:var(--gold);transform:scale(1.4);}
+
+/* ---------- layout shell ---------- */
+.wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:20px 16px 60px;}
+.panel{
+  border:1px solid var(--line);
+  background:rgba(10,9,6,.82);
+  margin-bottom:22px;
+  position:relative;
+}
+.panel-head{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:6px 12px;
+  border-bottom:1px solid var(--line);
+  font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);
+  font-family:'IBM Plex Mono',monospace;
+}
+.panel-body{padding:16px;}
+.tag{color:var(--ink-dim);font-size:11px;}
+
+/* ---------- header ---------- */
+.topbar{
+  display:flex;justify-content:space-between;align-items:center;
+  border:1px solid var(--gold-dim);background:rgba(20,16,8,.9);
+  padding:8px 14px;margin-bottom:22px;flex-wrap:wrap;gap:6px 16px;
+}
+.topbar .title{font-family:'Cinzel',serif;color:var(--gold);font-size:14px;letter-spacing:.08em;}
+.topbar .meta{display:flex;gap:16px;font-size:11px;color:var(--ink-dim);flex-wrap:wrap;}
+.topbar .meta b{color:var(--teal);}
+
+/* ---------- hero / profile ---------- */
+.grid-2{display:grid;grid-template-columns:1.1fr .9fr;gap:22px;}
+.hero-art{
+  aspect-ratio:4/3;border:1px solid var(--gold-dim);
+  background:
+    radial-gradient(circle at 50% 42%, rgba(201,162,39,.35), transparent 55%),
+    linear-gradient(160deg,#241a08,#0c0a06 70%);
+  display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;
+}
+.hero-art .external-art{width:100%;height:100%;object-fit:cover;display:block;filter:drop-shadow(0 0 6px rgba(201,162,39,.3));}
+.hero-art .scan{position:absolute;inset:0;background:repeating-linear-gradient(to bottom, transparent 0 3px, rgba(0,0,0,.25) 3px 4px);}
+.field-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--line);font-size:13px;}
+.field-row span:first-child{color:var(--ink-dim);}
+.field-row span:last-child{color:var(--ink);}
+.field-row.accent span:last-child{color:var(--gold);}
+
+/* ---------- manifest ---------- */
+.manifest-grid{display:grid;grid-template-columns:1fr 220px;gap:20px;align-items:start;}
+.manifest-grid p{margin:0 0 12px;color:var(--ink);}
+.manifest-grid .figure{border:1px solid var(--line);}
+.manifest-grid .figure .art{aspect-ratio:1/1.2;background:linear-gradient(160deg,#1c1408,#0c0a06);display:flex;align-items:center;justify-content:center;}
+.manifest-grid .figure .art .external-art{width:100%;height:100%;object-fit:cover;display:block;}
+.manifest-grid .cap{font-size:11px;color:var(--ink-dim);text-align:center;padding:4px;border-top:1px solid var(--line);}
+.quote-name{color:var(--gold);font-weight:600;}
+
+/* ---------- roster ---------- */
+.roster-cat{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);margin:18px 0 10px;}
+.roster-cat:first-child{margin-top:0;}
+.roster-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;}
+.card{
+  border:1px solid var(--line);background:#0d0b07;
+  cursor:pointer;position:relative;overflow:hidden;
+}
+.card .art{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(160deg,#1a1206,#0b0a06);transition:transform .25s ease, filter .25s ease;}
+.card .art .external-art{width:100%;height:100%;object-fit:cover;display:block;}
+.card:hover .art, .card.tap .art{transform:scale(1.06);filter:brightness(1.15) saturate(1.1);}
+.card .meta{padding:6px 8px;border-top:1px solid var(--line);}
+.card .name{font-size:12px;color:var(--ink);}
+.card .role{font-size:10px;color:var(--ink-dim);}
+.card .overlay{
+  position:absolute;inset:0;background:rgba(6,5,3,.88);
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  padding:10px;font-size:11px;color:var(--gold);
+  opacity:0;transition:opacity .2s ease;
+}
+.card:hover .overlay, .card.tap .overlay{opacity:1;}
+
+/* ---------- links ---------- */
+.links-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 20px;}
+.link-item{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:6px 0;font-size:12px;}
+.link-item span:first-child{color:var(--ink-dim);}
+
+/* ---------- nav ---------- */
+.nav-btn{
+  border:1px solid var(--gold-dim);background:transparent;color:var(--gold);
+  font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;
+  padding:6px 12px;cursor:pointer;
+}
+.nav-panel{
+  position:fixed;top:0;right:0;height:100%;width:min(280px,80vw);
+  background:#0c0a06;border-left:1px solid var(--gold-dim);z-index:50;
+  transform:translateX(100%);transition:transform .25s ease;padding:16px;
+}
+.nav-panel.open{transform:translateX(0);}
+.nav-panel a{display:block;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px;color:var(--ink);}
+.nav-panel a:hover{color:var(--gold);}
+.nav-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:49;display:none;}
+.nav-overlay.open{display:block;}
+
+/* ---------- footer ---------- */
+.statusbar{
+  display:flex;justify-content:space-between;border:1px solid var(--line);
+  background:rgba(20,16,8,.9);padding:6px 14px;font-size:11px;color:var(--ink-dim);
+  flex-wrap:wrap;gap:6px 16px;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:1024px){
+  .roster-grid{grid-template-columns:repeat(4,1fr);}
+}
+@media (max-width:900px){
+  .grid-2{grid-template-columns:1fr;}
+  .manifest-grid{grid-template-columns:1fr;}
+  .manifest-grid .figure{max-width:220px;}
+}
+@media (max-width:768px){
+  .roster-grid{grid-template-columns:repeat(3,1fr);}
+  .links-grid{grid-template-columns:repeat(2,1fr);}
+  body{cursor:auto;}
+  .cursor-dot,.cursor-ring{display:none;}
+}
+@media (max-width:480px){
+  body{font-size:14px;}
+  .roster-grid{grid-template-columns:repeat(2,1fr);gap:8px;}
+  .links-grid{grid-template-columns:1fr;}
+  .topbar{flex-direction:column;align-items:flex-start;}
+  .panel-body{padding:12px;}
+  h1,h2,h3{letter-spacing:.03em;}
+  .field-row{font-size:12px;}
+}
+@media (max-width:360px){
+  .roster-grid{grid-template-columns:repeat(2,1fr);}
+}
+
+.bg-image{
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background-image:url("ASSETS/background.jpg");
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+  opacity:.18;
+  mix-blend-mode:screen;
+}
+.asset-preload{display:none!important;}
+</style>
+<script>
+/* =========================================================
+   PORTS.URL — EDIT YOUR LINKS HERE
+   ========================================================= */
+const PORTS = {
+  github: "https://github.com/",
+  twitter: "https://x.com/",
+  instagram: "https://instagram.com/",
+  linkedin: "https://linkedin.com/",
+  letterboxd: "https://letterboxd.com/",
+  spotify: "https://open.spotify.com/",
+  email: "mailto:you@example.com",
+  rss: "#"
+};
+</script>
+</head>
+<body>
+
+<div class="bg-collage"></div>
+<div class="bg-image" aria-hidden="true"></div>
+<div class="bg-motifs" id="motifLayer"></div>
+<div class="vignette"></div>
+
+<div class="cursor-dot" id="cdot"></div>
+<div class="cursor-ring" id="cring"></div>
+
+<div class="crt">
+<img src="ASSETS/hero.jpg" alt="" class="asset-preload" aria-hidden="true">
+<div class="wrap">
+
+  <!-- ===== HEADER ===== -->
+  <div class="topbar">
+    <div class="title">System32.dll</div>
+    <div class="meta">
+      <span>VER <b>v3.02</b></span>
+      <span>STATUS <b>ONLINE</b></span>
+      <span>NODE <b>ARCHIVE-01</b></span>
+    </div>
+    <button class="nav-btn" id="navToggle">[ INDEX ]</button>
+  </div>
+
+  <!-- nav side panel -->
+  <div class="nav-overlay" id="navOverlay"></div>
+  <div class="nav-panel" id="navPanel">
+    <h3 style="font-size:13px;margin-bottom:14px;">INDEX.SYS</h3>
+    <a href="#hero">01 &nbsp; PROFILE.SYS</a>
+    <a href="#manifest">02 &nbsp; MANIFEST.HC</a>
+    <a href="#roster">03 &nbsp; ROSTER.DAT</a>
+    <a href="#links">03 &nbsp; PORTS.URL</a>
+  </div>
+
+  <!-- ===== HERO + PROFILE ===== -->
+  <div class="grid-2" id="hero">
+    <div class="panel">
+      <div class="panel-head"><span>VISION.SVG</span><span class="tag">01</span></div>
+      <div class="panel-body">
+        <div class="hero-art"><img class="external-art" src="ASSETS/hero.jpg" alt="Hero image">
+          <div class="scan"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><span>PROFILE.SYS</span><span class="tag">02</span></div>
+      <div class="panel-body">
+        <div class="field-row"><span>Name</span><span> Khaled </span></div>
+        <div class="field-row"><span>Handle</span><span> your.handle </span></div>
+        <div class="field-row accent"><span>Focus</span><span>Hacker &middot; Researchr &middot; Social Engineering</span></div>
+        <div class="field-row"><span>Base</span><span>Israel</span></div>
+        <div class="field-row"><span>Origin</span><span>Cairo , EG</span></div>
+        <div class="field-row"><span>Contact</span><span><a href="mailto:me@khaled.skin">me@khaled.skin</a></span></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ===== ROSTER ===== -->
+  <div class="panel" id="roster">
+    <div class="panel-head"><span>ROSTER.DAT</span><span class="tag">03</span></div>
+    <div class="panel-body">
+
+      <div class="roster-cat"></div>
+      <div class="roster-grid">
+        <div class="card" tabindex="0">
+          <div class="art"><img class="external-art" src="ASSETS/jeffrey epstein.jpg" alt="jeffrey epstein"></div>
+          <div class="meta"><div class="name">jeffrey epstein</div><div class="role">01</div></div>
+          <div class="overlay">Designed the Step Pyramid at Saqqara &mdash; the first great stone monument.</div>
+        </div>
+        <div class="card" tabindex="0">
+          <div class="art"><img class="external-art" src="ASSETS/Jihadi John.jpg" alt="Jihadi John"></div>
+          <div class="meta"><div class="name">Jihadi John</div><div class="role">02</div></div>
+          <div class="overlay">One of Egypt's longest-reigning rulers, presided over major building programs.</div>
+        </div>
+        <div class="card" tabindex="0">
+          <div class="art"><img class="external-art" src="ASSETS/Sheikh Sharawi.jpg" alt="Sheikh Sharawi"></div>
+          <div class="meta"><div class="name">Sheikh Sharawi</div><div class="role">03</div></div>
+          <div class="overlay">Built Abu Simbel and reigned nearly seven decades.</div>
+        </div>
+        <div class="card" tabindex="0">
+          <div class="art"><img class="external-art" src="ASSETS/Hitler.jpg" alt="Hitler"></div>
+          <div class="meta"><div class="name">Hitler</div><div class="role">04</div></div>
+          <div class="overlay">Commissioned the Great Pyramid of Giza.</div>
+        </div>
+        <div class="card" tabindex="0">
+          <div class="art"><img class="external-art" src="ASSETS/Sadat.jpg" alt="Sadat"></div>
+          <div class="meta"><div class="name">Sadat</div><div class="role">05</div></div>
+          <div class="overlay">Founder of historiography and the social sciences of civilization.</div>
+        </div>
+        <div class="card" tabindex="0">
+          <div class="art"><img class="external-art" src="ASSETS/Mohamed Naguib.jpg" alt="Mohamed Naguib"></div>
+          <div class="meta"><div class="name">Mohamed Naguib</div><div class="role">06</div></div>
+          <div class="overlay">Alexandrian mathematician and philosopher, taught openly and publicly.</div>
+        </div>
+      </div>
+</div>
+  </div>
+
+  <!-- ===== LINKS ===== -->
+  <div class="panel" id="links">
+    <div class="panel-head"><span>PORTS.URL</span><span class="tag">05</span></div>
+    <div class="panel-body links-grid">
+      <div class="link-item"><span>github</span><a data-port="github" href="">[ your.github ]</a></div>
+      <div class="link-item"><span>twitter</span><a data-port="twitter" href="">[ your.handle ]</a></div>
+      <div class="link-item"><span>instagram</span><a data-port="instagram" href="">[ your.handle ]</a></div>
+      <div class="link-item"><span>linkedin</span><a data-port="linkedin" href="">[ your.name ]</a></div>
+      <div class="link-item"><span>letterboxd</span><a data-port="letterboxd" href="">[ optional ]</a></div>
+      <div class="link-item"><span>spotify</span><a data-port="spotify" href="">[ optional ]</a></div>
+      <div class="link-item"><span>email</span><a data-port="email" href="">you@example.com</a></div>
+      <div class="link-item"><span>rss</span><a data-port="rss" href="">[ optional ]</a></div>
+    </div>
+  </div>
+
+  <!-- ===== FOOTER ===== -->
+  <div class="statusbar">
+    <span></span>
+    <span>Made By ABOLHB</span>
+    <span>&copy; <span id="year"></span></span>
+  </div>
+
+</div>
+</div>
+
+<script>
+/* year */
+document.getElementById('year').textContent = new Date().getFullYear();
+
+/* custom cursor, desktop / mouse only */
+(function(){
+  var isTouch = window.matchMedia('(pointer:coarse)').matches;
+  if(isTouch) return;
+  var dot = document.getElementById('cdot');
+  var ring = document.getElementById('cring');
+  var rx=0, ry=0, x=0, y=0;
+  window.addEventListener('mousemove', function(e){
+    x = e.clientX; y = e.clientY;
+    dot.style.transform = 'translate(' + (x-2) + 'px,' + (y-2) + 'px)';
+  });
+  function loop(){
+    rx += (x-rx)*0.18; ry += (y-ry)*0.18;
+    ring.style.transform = 'translate(' + (rx-11) + 'px,' + (ry-11) + 'px)';
+    requestAnimationFrame(loop);
+  }
+  loop();
+  document.querySelectorAll('a,button,.card').forEach(function(el){
+    el.addEventListener('mouseenter', function(){ ring.classList.add('active'); });
+    el.addEventListener('mouseleave', function(){ ring.classList.remove('active'); });
+  });
+})();
+
+/* tap-to-reveal for touch devices on cards */
+document.querySelectorAll('.card').forEach(function(card){
+  card.addEventListener('click', function(e){
+    var isTouch = window.matchMedia('(pointer:coarse)').matches;
+    if(!isTouch) return;
+    document.querySelectorAll('.card.tap').forEach(function(c){ if(c!==card) c.classList.remove('tap'); });
+    card.classList.toggle('tap');
+  });
+});
+
+/* nav panel */
+var navToggle = document.getElementById('navToggle');
+var navPanel = document.getElementById('navPanel');
+var navOverlay = document.getElementById('navOverlay');
+function closeNav(){ navPanel.classList.remove('open'); navOverlay.classList.remove('open'); }
+navToggle.addEventListener('click', function(){
+  navPanel.classList.toggle('open'); navOverlay.classList.toggle('open');
+});
+navOverlay.addEventListener('click', closeNav);
+navPanel.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', closeNav); });
+
+/* background motif field: local editable image assets */
+(function(){
+  var layer = document.getElementById('motifLayer');
+  var isSmall = window.innerWidth < 768;
+  var count = isSmall ? 8 : 18;
+  var images = ["motif_ankh.jpg","motif_eye.jpg","motif_pyramid.jpg"];
+
+  for(var i=0;i<count;i++){
+    var d = document.createElement('div');
+    var img = document.createElement('img');
+    img.src = 'ASSETS/' + images[i % images.length];
+    img.alt = "";
+    img.loading = "lazy";
+    img.style.width = "100%";
+    img.style.height = "100%";
+    img.style.objectFit = "contain";
+    d.style.position = "absolute";
+    d.style.width = (40 + Math.random()*60) + "px";
+    d.style.height = d.style.width;
+    d.style.left = (Math.random()*100) + "%";
+    d.style.top = (Math.random()*100) + "%";
+    d.style.transform = "rotate("+(Math.random()*40-20)+"deg)";
+    layer.appendChild(d);
+  }
+})();
+</script>
+
+
+<script>
+document.querySelectorAll('[data-port]').forEach(function(a){
+  var key = a.getAttribute('data-port');
+  if (PORTS[key]) {
+    a.href = PORTS[key];
+    if (PORTS[key] !== "#" && !PORTS[key].startsWith("mailto:")) {
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+    }
+  }
+});
+</script>
+</body>
+</html>
